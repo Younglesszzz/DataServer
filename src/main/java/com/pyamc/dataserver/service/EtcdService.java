@@ -6,12 +6,14 @@ import io.etcd.jetcd.kv.DeleteResponse;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.kv.TxnResponse;
+import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.op.Cmp;
 import io.etcd.jetcd.op.CmpTarget;
 import io.etcd.jetcd.op.Op;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import io.etcd.jetcd.watch.WatchEvent;
+import io.grpc.stub.CallStreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -81,5 +83,50 @@ public class EtcdService {
 
     private ByteSequence byteSequenceOf(String s) {
         return ByteSequence.from(s.getBytes());
+    }
+
+    public void putWithLease(String k, String v) {
+        Lease leaseClient = client.getLeaseClient();
+        leaseClient.grant(45).thenAccept(
+                result -> {
+                    long leaseId = result.getID();
+                    PutOption putOption = PutOption.newBuilder().withLeaseId(leaseId).build();
+                    kvClient.put(byteSequenceOf(k), byteSequenceOf(v), putOption).thenAccept(
+                            putResponse -> {
+                                leaseClient.keepAlive(leaseId, new CallStreamObserver<LeaseKeepAliveResponse>() {
+                                    @Override
+                                    public boolean isReady() {
+                                        return false;
+                                    }
+                                    @Override
+                                    public void setOnReadyHandler(Runnable runnable) {
+
+                                    }
+                                    @Override
+                                    public void disableAutoInboundFlowControl() {
+                                    }
+                                    @Override
+                                    public void request(int i) {
+                                    }
+                                    @Override
+                                    public void setMessageCompression(boolean b) {
+                                    }
+                                    @Override
+                                    public void onNext(LeaseKeepAliveResponse leaseKeepAliveResponse) {
+                                        logger.info("[{}]续租完成，TTL[{}]", Long.toHexString(leaseId), leaseKeepAliveResponse.getTTL());
+                                    }
+                                    @Override
+                                    public void onError(Throwable t) {
+                                        logger.error("onError", t);
+                                    }
+                                    @Override
+                                    public void onCompleted() {
+                                        logger.info("onCompleted");
+                                    }
+                                });
+                            }
+                    );
+                }
+        );
     }
 }
