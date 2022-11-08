@@ -5,10 +5,7 @@ import com.pyamc.dataserver.entity.ChunkInfo;
 import com.pyamc.dataserver.entity.Result;
 import com.pyamc.dataserver.service.StorageService;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -23,4 +20,8 @@ public class ChunkController {
         return storageService.saveChunk(chunk);
     }
 
+    @PostMapping("/get")
+    public Result get(@RequestParam ChunkInfo chunk) {
+        return storageService.readChunk(chunk.getOffset());
+    }
 }
