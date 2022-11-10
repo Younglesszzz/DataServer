@@ -23,14 +23,18 @@ public class DataNodeRunner implements ApplicationRunner {
         DataNode node = new DataNode();
         if (options.contains("addr")) {
             List<String> optionValues = args.getOptionValues("addr");
-            node.setUrl(optionValues.get(0));
+            node.setUrl(buildHttpUrl(optionValues.get(0)));
         }
         if (options.contains("name")) {
             List<String> optionalValues = args.getOptionValues("name");
-            node.setKey(optionalValues.get(0));
+            node.setKey(getNodeInfoKey(optionalValues.get(0)));
         }
         // 集群lease
-        etcdService.putWithLease(getNodeInfoKey(node.getKey()), JSON.toJSONString(node));
+        etcdService.putWithLease(node.getKey(), JSON.toJSONString(node));
+    }
+
+    private String buildHttpUrl(String s) {
+        return "http://" + s;
     }
 
     private static String getNodeInfoKey(String nodeName) {
