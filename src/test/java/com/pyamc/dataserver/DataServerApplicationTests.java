@@ -44,7 +44,7 @@ class DataServerApplicationTests {
 
     @Test
     void toHex() {
-        byte[] b = ByteBuffer.allocate(4).putInt(293).array();
+        byte[] b = new byte[]{0, 0, -41, 24};
         System.out.println(Arrays.toString(b));
         System.out.println(ByteBuffer.wrap(b).getInt());
     }

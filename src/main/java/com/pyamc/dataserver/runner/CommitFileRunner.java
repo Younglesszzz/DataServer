@@ -14,7 +14,7 @@ import java.util.Set;
 
 @Component
 public class CommitFileRunner implements ApplicationRunner {
-    private static String fileName = "src/CommitFile";
+    public static String fileName = "F:\\DataServer\\CommitFile";
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -23,7 +23,6 @@ public class CommitFileRunner implements ApplicationRunner {
         DataNode node = new DataNode();
         if (options.contains("name")) {
             List<String> optionalValues = args.getOptionValues("name");
-            fileName = fileName + optionalValues.get(0);
         }
         File commitFile = new File(fileName);
         if (!commitFile.exists()) {

@@ -1,6 +1,7 @@
 package com.pyamc.dataserver.service;
 
 import com.pyamc.dataserver.entity.Result;
+import com.pyamc.dataserver.runner.CommitFileRunner;
 import com.pyamc.dataserver.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 @Service
 public class StorageService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String fileName = "src/CommitFile.meil";
+    private static String fileName = CommitFileRunner.fileName;
     private static final int ChunkCapacity = 64 * 1024 * 1024;
     private static final int ChunkKeyBytesNum = 36;
     private static final int ChunkSizeBytesNum = 4;
@@ -24,7 +25,7 @@ public class StorageService {
 
     public Result saveChunk(MultipartFile chunk, long offset) {
         try {
-            RandomAccessFile commitFile = new RandomAccessFile(fileName, "rw");
+            RandomAccessFile commitFile = new RandomAccessFile(CommitFileRunner.fileName, "rw");
             byte[] chunkBytes = chunk.getBytes();
             commitFile.seek(offset);
             commitFile.write(chunkBytes, 0, chunkBytes.length);
@@ -40,7 +41,7 @@ public class StorageService {
     public Result readChunk(String offset, String chunkKey) {
         logger.info("ReadChunk#Offset {} ChunkKey {}", offset, chunkKey);
         try {
-            RandomAccessFile commitFile = new RandomAccessFile(fileName, "r");
+            RandomAccessFile commitFile = new RandomAccessFile(CommitFileRunner.fileName, "r");
             commitFile.seek(Long.parseLong(offset));
             byte[] chunkBytes = new byte[ChunkCapacity];
             FileInputStream in = new FileInputStream(commitFile.getFD());
@@ -64,7 +65,7 @@ public class StorageService {
             // 校验md5
             String recheckMd5 = FileUtil.getMD5sum(toCheck);
             String saveMd5 = new String(checkSumBytes, StandardCharsets.UTF_8);
-            if (recheckMd5.equals(saveMd5)) {
+            if (!recheckMd5.equals(saveMd5)) {
                 logger.error("Chunk CheckSum Error");
                 return Result.Fail(null);
             }
