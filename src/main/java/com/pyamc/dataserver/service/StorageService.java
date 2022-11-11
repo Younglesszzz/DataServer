@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +40,7 @@ public class StorageService {
         return Result.Fail(null);
     }
 
-    public Result readChunk(String offset, String chunkKey) {
+    public void readChunk(String offset, String chunkKey, HttpServletResponse response) {
         logger.info("ReadChunk#Offset {} ChunkKey {}", offset, chunkKey);
         try {
             RandomAccessFile commitFile = new RandomAccessFile(CommitFileRunner.fileName, "r");
@@ -60,20 +62,21 @@ public class StorageService {
             // 校验唯一标识ChunkKey
             if (!readKey.equals(chunkKey)) {
                 logger.error("Chunk Key Error");
-                return Result.Fail(null);
+                return;
             }
             // 校验md5
             String recheckMd5 = FileUtil.getMD5sum(toCheck);
             String saveMd5 = new String(checkSumBytes, StandardCharsets.UTF_8);
             if (!recheckMd5.equals(saveMd5)) {
                 logger.error("Chunk CheckSum Error");
-                return Result.Fail(null);
+                return;
             }
-            // 校验
-            return Result.Success(data);
+            ServletOutputStream out =  response.getOutputStream();
+            response.setContentType("application/octet-stream");
+            response.setContentLength(data.length);
+            out.write(data);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return Result.Fail(null);
     }
 }

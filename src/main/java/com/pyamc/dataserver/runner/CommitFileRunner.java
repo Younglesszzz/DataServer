@@ -28,18 +28,18 @@ public class CommitFileRunner implements ApplicationRunner {
         if (!commitFile.exists()) {
             commitFile.getParentFile().mkdir();
             try {
-                commitFile.createNewFile();
+                if (commitFile.createNewFile()) {
+                    byte[] zeros = new byte[16 * 1024];
+                    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(commitFile, true));
+                    int offset = 0;
+                    while (offset < Math.pow(2, 28)) {
+                        out.write(zeros);
+                        offset += zeros.length;
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        byte[] zeros = new byte[16 * 1024];
-        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(commitFile, true));
-        int offset = 0;
-        while (offset < Math.pow(2, 28)) {
-            out.write(zeros);
-            offset += zeros.length;
-        }
-        return;
     }
 }

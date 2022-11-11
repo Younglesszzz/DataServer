@@ -3,9 +3,9 @@ package com.pyamc.dataserver.entity;
 public class Result {
     public String code;
     public String message;
-    public Object data;
+    public byte[] data;
 
-    public Result(String code, String message, Object data) {
+    public Result(String code, String message, byte[] data) {
         this.code = code;
         this.message = message;
         this.data = data;
@@ -16,11 +16,11 @@ public class Result {
         this.message = message;
     }
 
-    public static Result Success(Object data) {
+    public static Result Success(byte[] data) {
         return new Result("0", "success", data);
     }
 
-    public static Result Fail(Object data) {
+    public static Result Fail(byte[] data) {
         return new Result("500", "Fail", data);
     }
 
@@ -44,7 +44,7 @@ public class Result {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(byte[] data) {
         this.data = data;
     }
 

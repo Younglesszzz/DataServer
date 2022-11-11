@@ -7,6 +7,7 @@ import com.pyamc.dataserver.util.FileUtil;
 import io.netty.buffer.ByteBuf;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.annotation.Resource;
 import java.nio.ByteBuffer;
@@ -30,8 +31,7 @@ class DataServerApplicationTests {
 
     @Test
     void ReadChunk() {
-        Result res = storageService.readChunk("0", "2945C3ACDD8ADEF1396C54CF9F34DD230000");
-        System.out.println(Arrays.toString((byte[]) res.data));
+        storageService.readChunk("0", "2945C3ACDD8ADEF1396C54CF9F34DD230000", new MockHttpServletResponse());
     }
 
     @Test
